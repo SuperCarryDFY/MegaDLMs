@@ -1,8 +1,8 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # todo: point the model_dir_path to the dir containing your converted hf checkpoint.
-model_dir_path = '/jinjieni/df_ckpt/cache/difflm/converted_checkpoints/dlm_training_test/ckptstep_28500/hf'
-prompts = ["The capital of France is"]
+model_dir_path = 'ckpts/cache/difflm/converted_checkpoints/dlm_training/ckptstep_90000/hf'
+prompts = ["", "", "", "", ""]
 
 tokenizer = AutoTokenizer.from_pretrained(model_dir_path)
 model = AutoModelForCausalLM.from_pretrained(
@@ -16,7 +16,7 @@ model_inputs = tokenizer(prompts, return_tensors="pt", padding_side='left', padd
 
 generated_ids = model.generate(
     **model_inputs,
-    temperature = 0.0,
+    temperature = 1.0,
     cfg = 0.0,
     remasking = "low_confidence",
     inference_block_size = 256,

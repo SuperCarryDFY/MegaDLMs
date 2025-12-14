@@ -276,7 +276,7 @@ def write_tokenizer(args: Namespace):
     # In megatron now we only save base model tokenizers
     if args.model in {
         "gptneox_1.7b_dlm",
-        "gptneox_1.7b_ar"
+        "gptneox_1.7b_ar",
         }:
         hf_tokenizer = AutoTokenizer.from_pretrained(
             os.path.join(
@@ -293,6 +293,10 @@ def write_tokenizer(args: Namespace):
                 f'megatron/training/tokenizer/gpt2_tokenizer'
                 )
             )
+    elif args.model in {
+        "custom_100m_dlm",
+        }:
+        hf_tokenizer = AutoTokenizer.from_pretrained("airkingbd/dplm_150m")
     else:
         raise NotImplementedError(f"Model {args.model} is not supported")
 
@@ -311,6 +315,7 @@ def main():
         "gptneox_1.7b_dlm",
         "gptneox_1.7b_ar",
         "gpt2_1b_dlm",
+        "custom_100m_dlm",
         },
         default="gptneox_1.7b_dlm")
     parser.add_argument("--output_dir", help="Location to write HF model and tokenizer",
@@ -336,12 +341,14 @@ def main():
         "gptneox_1.7b_dlm": os.path.join(PROJECT_DIR, f"tools/weights_conversion/hf_configs/gptneox_1.7b_dlm"),
         "gptneox_1.7b_ar": os.path.join(PROJECT_DIR, f"tools/weights_conversion/hf_configs/gptneox_1.7b_ar"),
         "gpt2_1b_dlm": os.path.join(PROJECT_DIR, f"tools/weights_conversion/hf_configs/gpt2_1b_dlm"),
+        "custom_100m_dlm": os.path.join(PROJECT_DIR, f"tools/weights_conversion/hf_configs/custom_100m_dlm"),
     }
     
     args.custom_models = [
         "gptneox_1.7b_dlm",
         "gptneox_1.7b_ar",
-        "gpt2_1b_dlm"
+        "gpt2_1b_dlm",
+        "custom_100m_dlm"
     ]
     
     write_fromscratch_model(

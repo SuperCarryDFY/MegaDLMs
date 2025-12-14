@@ -456,10 +456,10 @@ if [ "$CONVERT_CHECKPOINT_ONLY" == "convert_ckpt" ]; then
             echo "Converting checkpoint step $CKPT_STEP_TO_CONVERT to hf format."
 
             # convert the checkpoint to hf format
-            # MODEL_NAME="gptneox_1.7b_dlm"
-                # --model $MODEL_NAME \
+            MODEL_NAME="custom_100m_dlm"
         
             python tools/weights_conversion/megatron_to_hf_te.py \
+                --model $MODEL_NAME \
                 --untieembed \
                 --input_dir $CKPT_DIR/cache/difflm/converted_checkpoints/${RUN_NAME}/ckptstep_${CKPT_STEP_TO_CONVERT}/torch \
                 --output_dir $CKPT_DIR/cache/difflm/converted_checkpoints/${RUN_NAME}/ckptstep_${CKPT_STEP_TO_CONVERT}/hf \
