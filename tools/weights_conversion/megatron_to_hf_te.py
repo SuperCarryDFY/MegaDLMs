@@ -115,7 +115,7 @@ def write_fromscratch_model(
     # Load weights
     base_path = Path(input_base_path)/iteration
     assert len(list(base_path.glob("mp_rank_*"))) == 1, "Unshard your model with checkpoint_util.py first!"
-    loaded = torch.load(base_path/"mp_rank_00"/"model_optim_rng.pt", map_location="cpu")
+    loaded = torch.load(base_path/"mp_rank_00"/"model_optim_rng.pt", map_location="cpu", weights_only=False)
     args = loaded['args']
 
     loaded = loaded['model']
