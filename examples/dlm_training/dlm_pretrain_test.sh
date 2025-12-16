@@ -42,7 +42,7 @@ MODEL_PARALLEL_ARGS=(
 ########################################################
 
 # todo: reset these values
-RUN_NAME=dlm_training_test
+RUN_NAME=dlm_training_protein
 train_data_prefix="$DATASETS_DIR/dplm_ur50_index/train_seq_document"
 valid_data_prefix="$DATASETS_DIR/dplm_ur50_index/val_seq_document"
 TRAINING_TOKENS_PER_EPOCH=10000000000 # 1M token bs for 10k steps per epoch
@@ -121,9 +121,9 @@ SAVE_INTERVAL=10000
 LOG_INTERVAL=10
 NON_PERSISTENT_SAVE_INTERVAL=$((TRAIN_ITERS * 2))
 # EVAL_INTERVAL=$((TRAIN_ITERS / EPOCHS))
-EVAL_INTERVAL=200
+EVAL_INTERVAL=500
 
-TARGET_VAL_TOKENS=150000000 # 150M tokens
+TARGET_VAL_TOKENS=80000000 # 80M tokens, 80k * 1024 per validation
 TOKENS_PER_VAL_BATCH=$((GLOBAL_BATCH_SIZE * SEQ_LENGTH))
 VAL_ITERS=$((TARGET_VAL_TOKENS / TOKENS_PER_VAL_BATCH))
 

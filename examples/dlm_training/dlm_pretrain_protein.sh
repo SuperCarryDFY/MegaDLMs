@@ -42,7 +42,7 @@ MODEL_PARALLEL_ARGS=(
 ########################################################
 
 # todo: reset these values
-RUN_NAME=dlm_training
+RUN_NAME=dlm_training_ur50_unconditional
 train_data_prefix="$DATASETS_DIR/dplm_ur50_index/train_seq_document"
 valid_data_prefix="$DATASETS_DIR/dplm_ur50_index/val_seq_document"
 TRAINING_TOKENS_PER_EPOCH=10000000000 # 1M token bs for 10k steps per epoch
@@ -123,7 +123,7 @@ NON_PERSISTENT_SAVE_INTERVAL=$((TRAIN_ITERS * 2))
 # EVAL_INTERVAL=$((TRAIN_ITERS / EPOCHS))
 EVAL_INTERVAL=200
 
-TARGET_VAL_TOKENS=30000000 # 30M tokens, 30k * 1024 tokens per validation
+TARGET_VAL_TOKENS=80000000 # 80M tokens, 80k * 1024 per validation
 TOKENS_PER_VAL_BATCH=$((GLOBAL_BATCH_SIZE * SEQ_LENGTH))
 VAL_ITERS=$((TARGET_VAL_TOKENS / TOKENS_PER_VAL_BATCH))
 
@@ -192,6 +192,8 @@ DATA_ARGS=(
     --data-cache-path $data_local_cache_dir
     --tokenizer-type HuggingFaceTokenizer
     --tokenizer-model $TOKENIZER
+    --reset-position-ids   ## add by fengyuan
+    --reset-attention-mask ## add by fengyuan
 )
 
 if [ "$WANDB_MODE" == "" ]; then
@@ -231,6 +233,10 @@ EVAL_AND_LOGGING_ARGS=(
     --wandb-resume allow
 )
 
+DIFFLM_ARGS=(
+    --cut-off-varlen-to-seqlen   ## add by fengyuan
+)
+
 ########################################################
 # Run the training script
 ########################################################
@@ -242,6 +248,7 @@ echo "MODEL_PARALLEL_ARGS: " ${MODEL_PARALLEL_ARGS[@]}
 echo "DATA_ARGS: " ${DATA_ARGS[@]}
 echo "EVAL_AND_LOGGING_ARGS: " ${EVAL_AND_LOGGING_ARGS[@]}
 echo "PLMT_ARGS: " ${PLMT_ARGS[@]}
+echo "DIFFLM_ARGS: " ${DIFFLM_ARGS[@]}
 
 if [ "$CONVERT_CHECKPOINT_ONLY" == "convert_ckpt" ]; then
     echo "Skipping training and converting checkpoint only"
@@ -265,7 +272,8 @@ elif [ "$CONVERT_CHECKPOINT_ONLY" == "" ]; then
             ${MODEL_PARALLEL_ARGS[@]} \
             ${DATA_ARGS[@]} \
             ${EVAL_AND_LOGGING_ARGS[@]} \
-            ${PLMT_ARGS[@]}
+            ${PLMT_ARGS[@]}\
+            ${DIFFLM_ARGS[@]}
     fi
 else
     echo "Invalid value for CONVERT_CHECKPOINT_ONLY: $CONVERT_CHECKPOINT_ONLY. Please use 'convert_ckpt' or leave blank."
