@@ -248,12 +248,13 @@ def get_batch(data_iterator):
 SPIKY_LOSS_PERC = 0.2
 
 
-def loss_func(loss_mask: torch.Tensor, model: GPTModel, output_tensor: torch.Tensor):
+def loss_func(loss_mask: torch.Tensor, model: GPTModel, raw_loss: torch.Tensor, output_tensor: torch.Tensor):
     """Loss function.
 
     Args:
         loss_mask (torch.Tensor): Used to mask out some portions of the loss
         output_tensor (torch.Tensor): The tensor with the losses
+        raw_loss (torch.Tensor, optional): Raw loss before p_mask weighting (for difflm-noshift mode)
 
     Returns:
         the loss scalar for this micro-batch
@@ -297,10 +298,34 @@ def loss_func(loss_mask: torch.Tensor, model: GPTModel, output_tensor: torch.Ten
     
     gpt_model_instance = get_base_model(model)
     if args.model_running_mode == "difflm-noshift":
+        # Calculate raw loss (before p_mask weighting) if available
+        # Return as tuple (raw_loss_sum, token_count) similar to lm loss
+        raw_loss_tuple = None
+        if raw_loss is not None:
+            # Calculate raw loss sum and token count
+            raw_losses = raw_loss.float()
+            raw_loss_mask = loss_mask.view(-1).float()
+            raw_total_tokens = raw_loss_mask.sum()
+            if raw_total_tokens > 0:
+                raw_loss_sum = torch.sum(raw_losses.view(-1) * raw_loss_mask)
+                # Create tensor similar to loss format: [loss_sum, token_count]
+                raw_loss_tensor = torch.cat([raw_loss_sum.view(1), raw_total_tokens.view(1)])
+                
+                if args.context_parallel_size > 1:
+                    torch.distributed.all_reduce(raw_loss_tensor, group=mpu.get_context_parallel_group())
+                
+                # Reduce across data parallel group (similar to reporting_loss)
+                reporting_raw_loss = raw_loss_tensor.clone().detach()
+                torch.distributed.all_reduce(reporting_raw_loss, group=mpu.get_data_parallel_group())
+                
+                raw_loss_tuple = (reporting_raw_loss[0], reporting_raw_loss[1])
+        
         logging_dict = {
             'lm loss': (reporting_loss[0], reporting_loss[1]),
             'real input length': gpt_model_instance.real_input_length,
             }
+        if raw_loss_tuple is not None:
+            logging_dict['lm loss (raw)'] = raw_loss_tuple
     elif args.model_running_mode == "vanilla":
         logging_dict = {
             'lm loss': (reporting_loss[0], reporting_loss[1]),
@@ -311,7 +336,6 @@ def loss_func(loss_mask: torch.Tensor, model: GPTModel, output_tensor: torch.Ten
             }
     else:
         raise NotImplementedError("not supported yet, need implementation.")
-    
     return (
         loss[0] * args.context_parallel_size,
         local_num_tokens,
@@ -338,20 +362,35 @@ def forward_step(data_iterator, model: GPTModel):
     timers('batch-generator').stop()
 
     with stimer:
-        output_tensor, difflm_mask = model(tokens, position_ids, attention_mask,
+        model_output = model(tokens, position_ids, attention_mask,
                               labels=labels, packed_seq_params=packed_seq_params)
         
         if args.model_running_mode_curr == "difflm-noshift":
+            if len(model_output) == 3:
+                output_tensor, difflm_mask, raw_loss = model_output
+            else:
+                # gpt_block_return_loss_and_logits mode
+                output_tensor, logits, difflm_mask, raw_loss = model_output
             if args.attention_mask_type == 'no_mask':
                 loss_mask = loss_mask[:,:difflm_mask.shape[1]].contiguous()
         elif args.model_running_mode_curr == "vanilla":
+            if len(model_output) == 2:
+                output_tensor, difflm_mask = model_output
+            else:
+                output_tensor, logits, difflm_mask = model_output
             assert difflm_mask is None
+            raw_loss = None
         elif args.model_running_mode_curr == "test-forward":
+            if len(model_output) == 2:
+                output_tensor, difflm_mask = model_output
+            else:
+                output_tensor, logits, difflm_mask = model_output
             assert difflm_mask is None
+            raw_loss = None
         else:
             raise NotImplementedError("not supported yet, need implementation.")
 
-    return output_tensor, partial(loss_func, loss_mask, model)
+    return output_tensor, partial(loss_func, loss_mask, model, raw_loss)
 
 
 def is_dataset_built_on_rank():

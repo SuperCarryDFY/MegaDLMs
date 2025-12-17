@@ -42,7 +42,7 @@ MODEL_PARALLEL_ARGS=(
 ########################################################
 
 # todo: reset these values
-RUN_NAME=dlm_training_ur50_unconditional
+RUN_NAME=01-1216-dlm_training_ur50_unconditional
 train_data_prefix="$DATASETS_DIR/dplm_ur50_index/train_seq_document"
 valid_data_prefix="$DATASETS_DIR/dplm_ur50_index/val_seq_document"
 TRAINING_TOKENS_PER_EPOCH=10000000000 # 1M token bs for 10k steps per epoch
@@ -158,10 +158,8 @@ TRAINING_ARGS=(
     --init-method-std 0.02
     --clip-grad 1.0 
     --bf16
-    --lr 0.0002
-    --min-lr 0.00002
-    # --no-rope-fusion # add by fengyuan, otherwise will raise error
-    # --no-gradient-accumulation-fusion # add by fengyuan, otherwise will raise error
+    --lr 1e-5
+    --min-lr 1e-6
     --lr-decay-style WSD
     --lr-warmup-iters 2000  ## fengyuan : change to 2000
     --lr-decay-iters $TRAIN_ITERS # this includes the warmup phase

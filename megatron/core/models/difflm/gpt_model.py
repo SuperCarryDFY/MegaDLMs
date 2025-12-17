@@ -526,7 +526,14 @@ class GPTModel(LanguageModule):
         loss = self.compute_language_model_loss(labels, logits)
         
         if self.args.model_running_mode_curr == "difflm-noshift":
+                # Calculate raw loss (before weighting) for logging
+                # Only mask, don't divide by p_mask
+                raw_loss = loss * difflm_mask.float()  # [b, l]
+                # Apply weighting: divide by p_mask
                 loss = loss * difflm_mask / p_mask # [b, l]
+                if self.config.gpt_block_return_loss_and_logits:
+                    return loss, logits, difflm_mask, raw_loss
+                return loss, difflm_mask, raw_loss
         
         if self.config.gpt_block_return_loss_and_logits:
             return loss, logits, difflm_mask

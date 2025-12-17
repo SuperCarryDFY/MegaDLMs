@@ -10,7 +10,7 @@ export TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC=3600
 # Distributed settings
 ########################################################
 
-GPUS_PER_NODE=1 # todo: set to your own env value
+GPUS_PER_NODE=8 # todo: set to your own env value
 NUM_NODES=1 # todo: set to your own env value
 NODE_RANK=0 # todo: set to your own env value
 MASTER_ADDR=localhost # todo: set to your own env value
@@ -42,11 +42,11 @@ MODEL_PARALLEL_ARGS=(
 ########################################################
 
 # todo: reset these values
-RUN_NAME=dlm_training_protein
+RUN_NAME=99-1217-dlm_training_ur50_unconditional
 train_data_prefix="$DATASETS_DIR/dplm_ur50_index/train_seq_document"
 valid_data_prefix="$DATASETS_DIR/dplm_ur50_index/val_seq_document"
-TRAINING_TOKENS_PER_EPOCH=10000000000 # 1M token bs for 10k steps per epoch
-EPOCHS=10
+TRAINING_TOKENS_PER_EPOCH=10737418240 # 1M token bs for 10k steps per epoch；1024 * 1024 * 1024 * 10 
+EPOCHS=2
 GLOBAL_BATCH_SIZE=1024
 SEQ_LENGTH=1024
 TOKENIZER=airkingbd/dplm_150m
@@ -121,7 +121,7 @@ SAVE_INTERVAL=10000
 LOG_INTERVAL=10
 NON_PERSISTENT_SAVE_INTERVAL=$((TRAIN_ITERS * 2))
 # EVAL_INTERVAL=$((TRAIN_ITERS / EPOCHS))
-EVAL_INTERVAL=500
+EVAL_INTERVAL=200
 
 TARGET_VAL_TOKENS=80000000 # 80M tokens, 80k * 1024 per validation
 TOKENS_PER_VAL_BATCH=$((GLOBAL_BATCH_SIZE * SEQ_LENGTH))
@@ -160,8 +160,6 @@ TRAINING_ARGS=(
     --bf16
     --lr 0.0002
     --min-lr 0.00002
-    # --no-rope-fusion # add by fengyuan, otherwise will raise error
-    # --no-gradient-accumulation-fusion # add by fengyuan, otherwise will raise error
     --lr-decay-style WSD
     --lr-warmup-iters 2000  ## fengyuan : change to 2000
     --lr-decay-iters $TRAIN_ITERS # this includes the warmup phase
@@ -194,7 +192,6 @@ DATA_ARGS=(
     --tokenizer-model $TOKENIZER
     --reset-position-ids   ## add by fengyuan
     --reset-attention-mask ## add by fengyuan
-    --eod-mask-loss        ## add by fengyuan
 )
 
 if [ "$WANDB_MODE" == "" ]; then
