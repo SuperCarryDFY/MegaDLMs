@@ -45,7 +45,7 @@ MODEL_PARALLEL_ARGS=(
 RUN_NAME=01-1216-dlm_training_ur50_unconditional
 train_data_prefix="$DATASETS_DIR/dplm_ur50_index/train_seq_document"
 valid_data_prefix="$DATASETS_DIR/dplm_ur50_index/val_seq_document"
-TRAINING_TOKENS_PER_EPOCH=10000000000 # 1M token bs for 10k steps per epoch
+TRAINING_TOKENS_PER_EPOCH=10737418240 # 1M token bs for 10k steps per epoch;1024 * 1024 * 1024 * 10 
 EPOCHS=10
 GLOBAL_BATCH_SIZE=1024
 SEQ_LENGTH=1024
@@ -95,6 +95,7 @@ GPT_MODEL_ARGS=(
     --ffn-hidden-size 1024
     --swiglu
     --vocab-size 33
+    --make-vocab-size-divisible-by 1 ## add by fengyuan; Otherwise the vocab size will be 128
     --normalization RMSNorm
     --max-position-embeddings $SEQ_LENGTH
     --norm-epsilon 1e-6
@@ -158,8 +159,8 @@ TRAINING_ARGS=(
     --init-method-std 0.02
     --clip-grad 1.0 
     --bf16
-    --lr 1e-5
-    --min-lr 1e-6
+    --lr 0.0002
+    --min-lr 0.00002
     --lr-decay-style WSD
     --lr-warmup-iters 2000  ## fengyuan : change to 2000
     --lr-decay-iters $TRAIN_ITERS # this includes the warmup phase

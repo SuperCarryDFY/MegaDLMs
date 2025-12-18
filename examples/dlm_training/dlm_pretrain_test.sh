@@ -14,7 +14,7 @@ GPUS_PER_NODE=8 # todo: set to your own env value
 NUM_NODES=1 # todo: set to your own env value
 NODE_RANK=0 # todo: set to your own env value
 MASTER_ADDR=localhost # todo: set to your own env value
-MASTER_PORT=6000 # todo: set to your own env value
+MASTER_PORT=29500 # todo: set to your own env value
 
 WORLD_SIZE=$((GPUS_PER_NODE * NUM_NODES))
 MODEL_PARALLEL_SIZE=1
@@ -42,7 +42,7 @@ MODEL_PARALLEL_ARGS=(
 ########################################################
 
 # todo: reset these values
-RUN_NAME=99-1217-dlm_training_ur50_unconditional
+RUN_NAME=99-1218_2-dlm_training_ur50_unconditional
 train_data_prefix="$DATASETS_DIR/dplm_ur50_index/train_seq_document"
 valid_data_prefix="$DATASETS_DIR/dplm_ur50_index/val_seq_document"
 TRAINING_TOKENS_PER_EPOCH=10737418240 # 1M token bs for 10k steps per epoch；1024 * 1024 * 1024 * 10 
@@ -95,6 +95,7 @@ GPT_MODEL_ARGS=(
     --ffn-hidden-size 1024
     --swiglu
     --vocab-size 33
+    --make-vocab-size-divisible-by 1 ## add by fengyuan; Otherwise the vocab size will be 128
     --normalization RMSNorm
     --max-position-embeddings $SEQ_LENGTH
     --norm-epsilon 1e-6
@@ -304,7 +305,7 @@ if [ "$CONVERT_CHECKPOINT_ONLY" == "convert_ckpt" ]; then
 
     if [ "$NUM_NODES_CONVERT_CKPT" == "1" ]; then
         MASTER_ADDR=localhost
-        MASTER_PORT=6000
+        MASTER_PORT=29500
         NODE_RANK=0
     fi
 
