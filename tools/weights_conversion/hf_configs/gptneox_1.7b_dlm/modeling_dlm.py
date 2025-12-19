@@ -807,7 +807,7 @@ class DiffLM(DLMPreTrainedModel, GenerationMixin):
             block_length: Block length, less than or equal to gen_length. If less than gen_length, it means using semi_autoregressive remasking.
             temperature: Categorical distribution sampling temperature.
             cfg: Unsupervised classifier-free guidance scale.
-            remasking: Remasking strategy. 'low_confidence' or 'random'.
+            remasking: Remasking strategy. 'low_confidence', 'random', or 'entropy'.
             mask_id: The toke id of [MASK].
         '''
         generation_config, model_kwargs = super()._prepare_generation_config(generation_config, **kwargs)
@@ -898,6 +898,14 @@ class DiffLM(DLMPreTrainedModel, GenerationMixin):
                         torch.gather(p, dim=-1, index=torch.unsqueeze(x0, -1)), -1) # b, l
                 elif remasking == 'random':
                     x0_p = torch.rand((x0.shape[0], x0.shape[1]), device=x0.device)
+                elif remasking == 'entropy':
+                    # Use entropy as a diversity measure to avoid repetition
+                    # Higher entropy = more diverse = should be kept
+                    # Lower entropy = more repetitive = should be remasked
+                    p = F.softmax(logits.to(torch.float64), dim=-1)
+                    # Calculate entropy: -sum(p * log(p)) for each position
+                    entropy = -torch.sum(p * torch.log(p + 1e-10), dim=-1)  # b, l
+                    x0_p = entropy  # Use entropy as confidence (higher entropy = higher confidence to keep)
                 else:
                     raise NotImplementedError(remasking)
 
