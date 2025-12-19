@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -p public-h800
+#SBATCH -p public-h100
 #SBATCH -N 1
 #SBATCH -n 1
 #SBATCH --mem 1800G
