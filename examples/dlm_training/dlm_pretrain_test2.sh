@@ -14,7 +14,7 @@ GPUS_PER_NODE=8 # todo: set to your own env value
 NUM_NODES=1 # todo: set to your own env value
 NODE_RANK=0 # todo: set to your own env value
 MASTER_ADDR=localhost # todo: set to your own env value
-MASTER_PORT=6000 # todo: set to your own env value
+MASTER_PORT=29500 # todo: set to your own env value
 
 WORLD_SIZE=$((GPUS_PER_NODE * NUM_NODES))
 MODEL_PARALLEL_SIZE=1
@@ -42,11 +42,11 @@ MODEL_PARALLEL_ARGS=(
 ########################################################
 
 # todo: reset these values
-RUN_NAME=01-1216-dlm_training_ur50_unconditional
+RUN_NAME=99-1218_3-dlm_training_ur50_unconditional
 train_data_prefix="$DATASETS_DIR/dplm_ur50_index/train_seq_document"
 valid_data_prefix="$DATASETS_DIR/dplm_ur50_index/val_seq_document"
-TRAINING_TOKENS_PER_EPOCH=10737418240 # 1M token bs for 10k steps per epoch;1024 * 1024 * 1024 * 10 
-EPOCHS=30
+TRAINING_TOKENS_PER_EPOCH=10737418240 # 1M token bs for 10k steps per epoch；1024 * 1024 * 1024 * 10 
+EPOCHS=10
 GLOBAL_BATCH_SIZE=1024
 SEQ_LENGTH=1024
 TOKENIZER=airkingbd/dplm_150m
@@ -159,8 +159,8 @@ TRAINING_ARGS=(
     --init-method-std 0.02
     --clip-grad 1.0 
     --bf16
-    --lr 0.0002
-    --min-lr 0.00002
+    --lr 1e-5
+    --min-lr 1e-6
     --lr-decay-style WSD
     --lr-warmup-iters 2000  ## fengyuan : change to 2000
     --lr-decay-iters $TRAIN_ITERS # this includes the warmup phase
@@ -305,7 +305,7 @@ if [ "$CONVERT_CHECKPOINT_ONLY" == "convert_ckpt" ]; then
 
     if [ "$NUM_NODES_CONVERT_CKPT" == "1" ]; then
         MASTER_ADDR=localhost
-        MASTER_PORT=6000
+        MASTER_PORT=29500
         NODE_RANK=0
     fi
 

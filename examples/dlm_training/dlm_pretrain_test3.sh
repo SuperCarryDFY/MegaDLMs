@@ -14,7 +14,7 @@ GPUS_PER_NODE=8 # todo: set to your own env value
 NUM_NODES=1 # todo: set to your own env value
 NODE_RANK=0 # todo: set to your own env value
 MASTER_ADDR=localhost # todo: set to your own env value
-MASTER_PORT=6000 # todo: set to your own env value
+MASTER_PORT=29500 # todo: set to your own env value
 
 WORLD_SIZE=$((GPUS_PER_NODE * NUM_NODES))
 MODEL_PARALLEL_SIZE=1
@@ -42,13 +42,13 @@ MODEL_PARALLEL_ARGS=(
 ########################################################
 
 # todo: reset these values
-RUN_NAME=01-1216-dlm_training_ur50_unconditional
+RUN_NAME=99-1218_4-dlm_training_ur50_unconditional
 train_data_prefix="$DATASETS_DIR/dplm_ur50_index/train_seq_document"
 valid_data_prefix="$DATASETS_DIR/dplm_ur50_index/val_seq_document"
-TRAINING_TOKENS_PER_EPOCH=10737418240 # 1M token bs for 10k steps per epoch;1024 * 1024 * 1024 * 10 
-EPOCHS=30
-GLOBAL_BATCH_SIZE=1024
-SEQ_LENGTH=1024
+TRAINING_TOKENS_PER_EPOCH=10737418240 # 1M token bs for 10k steps per epoch；1024 * 1024 * 1024 * 10 
+EPOCHS=5
+GLOBAL_BATCH_SIZE=256
+SEQ_LENGTH=4096  # should be 16384
 TOKENIZER=airkingbd/dplm_150m
 # TOKENIZER=google/t5-v1_1-xxl # or change this to any huggingface tokenizer; local tokenizer is also supported
 
@@ -150,7 +150,7 @@ if [ $((DATA_PARALLEL_SIZE * MICRO_BATCH_SIZE)) -gt $GLOBAL_BATCH_SIZE ]; then
 fi
 
 TRAINING_ARGS=(
-    --micro-batch-size 64
+    --micro-batch-size 16
     --global-batch-size $GLOBAL_BATCH_SIZE
     --train-iters $TRAIN_ITERS
     --weight-decay 0.1
@@ -159,8 +159,8 @@ TRAINING_ARGS=(
     --init-method-std 0.02
     --clip-grad 1.0 
     --bf16
-    --lr 0.0002
-    --min-lr 0.00002
+    --lr 1e-5
+    --min-lr 1e-6
     --lr-decay-style WSD
     --lr-warmup-iters 2000  ## fengyuan : change to 2000
     --lr-decay-iters $TRAIN_ITERS # this includes the warmup phase
@@ -173,6 +173,7 @@ TRAINING_ARGS=(
     --overlap-param-gather
     --overlap-grad-reduce
     --distributed-timeout-minutes 60
+    # --recompute-activations # add by fengyuan to save GPU memories
     # --tp-comm-overlap #todo turn on this when using TP > 1 and SP > 1
     # --num-layers-per-virtual-pipeline-stage # todo specify this when PP > 1
 )
@@ -305,7 +306,7 @@ if [ "$CONVERT_CHECKPOINT_ONLY" == "convert_ckpt" ]; then
 
     if [ "$NUM_NODES_CONVERT_CKPT" == "1" ]; then
         MASTER_ADDR=localhost
-        MASTER_PORT=6000
+        MASTER_PORT=29500
         NODE_RANK=0
     fi
 
