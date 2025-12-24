@@ -372,7 +372,6 @@ def forward_step(data_iterator, model: GPTModel):
                 output_tensor, logits, difflm_mask, raw_loss = model_output
             if args.attention_mask_type == 'no_mask':
                 loss_mask = loss_mask[:,:difflm_mask.shape[1]].contiguous()
-            loss_mask = loss_mask * difflm_mask.to(loss_mask.dtype) #  add by fengyuan to mask out the loss for the unmasked tokens
 
         elif args.model_running_mode_curr == "vanilla":
             if len(model_output) == 2:
