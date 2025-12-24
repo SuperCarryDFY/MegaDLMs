@@ -342,13 +342,15 @@ def main():
         "gptneox_1.7b_ar": os.path.join(PROJECT_DIR, f"tools/weights_conversion/hf_configs/gptneox_1.7b_ar"),
         "gpt2_1b_dlm": os.path.join(PROJECT_DIR, f"tools/weights_conversion/hf_configs/gpt2_1b_dlm"),
         "custom_100m_dlm": os.path.join(PROJECT_DIR, f"tools/weights_conversion/hf_configs/custom_100m_dlm"),
+        "custom_1b_dlm": os.path.join(PROJECT_DIR, f"tools/weights_conversion/hf_configs/custom_1b_dlm"),
     }
     
     args.custom_models = [
         "gptneox_1.7b_dlm",
         "gptneox_1.7b_ar",
         "gpt2_1b_dlm",
-        "custom_100m_dlm"
+        "custom_100m_dlm",
+        "custom_1b_dlm"
     ]
     
     write_fromscratch_model(
