@@ -295,6 +295,7 @@ def write_tokenizer(args: Namespace):
             )
     elif args.model in {
         "custom_100m_dlm",
+        "custom_1b_dlm",
         }:
         hf_tokenizer = AutoTokenizer.from_pretrained("airkingbd/dplm_150m")
     else:
@@ -316,6 +317,7 @@ def main():
         "gptneox_1.7b_ar",
         "gpt2_1b_dlm",
         "custom_100m_dlm",
+        "custom_1b_dlm",
         },
         default="gptneox_1.7b_dlm")
     parser.add_argument("--output_dir", help="Location to write HF model and tokenizer",

@@ -621,7 +621,7 @@ def dlm_generation_v5(
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("airkingbd/dplm_150m")
     dlm = AutoModelForCausalLM.from_pretrained(
-        "ckpts/cache/difflm/converted_checkpoints/99-1218_3-dlm_training_ur50_unconditional/ckptstep_70000/hf", 
+        "ckpts/cache/difflm/converted_checkpoints/01-1224-dlm_training_ur50_unconditional_1B/ckptstep_307200/hf", 
         torch_dtype="auto", trust_remote_code=True, attn_implementation="flash_attention_2").to('cuda')
     dlm.eval()
     # for dlm generation

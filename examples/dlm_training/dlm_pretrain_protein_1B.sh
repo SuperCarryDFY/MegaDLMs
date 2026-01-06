@@ -463,7 +463,7 @@ if [ "$CONVERT_CHECKPOINT_ONLY" == "convert_ckpt" ]; then
             echo "Converting checkpoint step $CKPT_STEP_TO_CONVERT to hf format."
 
             # convert the checkpoint to hf format
-            MODEL_NAME="custom_1B_dlm"
+            MODEL_NAME="custom_1b_dlm"
         
             python tools/weights_conversion/megatron_to_hf_te.py \
                 --model $MODEL_NAME \

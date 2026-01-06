@@ -3,7 +3,7 @@ import torch
 
 
 # todo: point the model_dir_path to the dir containing your converted hf checkpoint.
-model_dir_path = 'ckpts/cache/difflm/converted_checkpoints/99-1218_3-dlm_training_ur50_unconditional/ckptstep_70000/hf'
+model_dir_path = 'ckpts/cache/difflm/converted_checkpoints/01-1224-dlm_training_ur50_unconditional_1B/ckptstep_307200/hf'
 # prompts = ["", ""]
 
 tokenizer = AutoTokenizer.from_pretrained(model_dir_path)
@@ -29,7 +29,7 @@ model_inputs = {
 print(model_inputs)
 generated_ids = model.generate(
     **model_inputs,
-    temperature = 0.7,
+    temperature = 0.5,
     cfg = 0.0,
     # remasking = "random",
     # remasking="low_confidence",  # May cause repetition issues
